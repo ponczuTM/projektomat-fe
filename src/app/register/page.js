@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { UserPlus, Mail, Lock, User, Loader2 } from "lucide-react";
 
-// Importy shadcn/ui
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +19,13 @@ import {
 
 export default function RegisterPage() {
   const router = useRouter();
-  
-  // Stan formularza
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,17 +34,41 @@ export default function RegisterPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = ({ name, password }) => {
+    if (!name || name.trim().length < 2) {
+      return "Imię musi mieć minimum 2 znaki";
+    }
+    // Gitea wymaga minimum 8 znaków (domyślna konfiguracja)
+    if (!password || password.length < 8) {
+      return "Hasło musi mieć minimum 8 znaków";
+    }
+    if (/\s/.test(password)) {
+      return "Hasło nie może zawierać spacji";
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     setError("");
 
+    const validationError = validateForm(formData);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
@@ -54,10 +76,7 @@ export default function RegisterPage() {
         throw new Error(data.message || "Coś poszło nie tak podczas rejestracji");
       }
 
-      // Zapisujemy token (opcjonalnie, zależy od Twojej strategii auth)
       localStorage.setItem("token", data.token);
-      
-      // Przekierowanie po sukcesie
       router.push("/login");
     } catch (err) {
       setError(err.message);
@@ -77,7 +96,7 @@ export default function RegisterPage() {
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
             Utwórz konto
-            </CardTitle>
+          </CardTitle>
           <CardDescription>
             Wprowadź dane, aby zarejestrować się w systemie
           </CardDescription>
@@ -85,16 +104,14 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit}>
           <CardContent className="grid gap-4">
-            {/* Komunikat o błędzie */}
             {error && (
               <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive border border-destructive/20">
                 {error}
               </div>
             )}
 
-            {/* Pole Imię */}
             <div className="grid gap-2">
-              <Label htmlFor="name">Imię</Label>
+              <Label htmlFor="name">Imię i nazwisko</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -110,7 +127,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Pole Email */}
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">
@@ -128,7 +144,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Pole Hasło */}
             <div className="grid gap-2">
               <Label htmlFor="password">Hasło</Label>
               <div className="relative">
@@ -139,19 +154,19 @@ export default function RegisterPage() {
                   type="password"
                   required
                   className="pl-10"
+                  placeholder="Minimum 8 znaków"
                   value={formData.password}
                   onChange={handleChange}
                 />
               </div>
+              <p className="text-xs text-muted-foreground">
+                Hasło musi mieć co najmniej 8 znaków
+              </p>
             </div>
           </CardContent>
 
           <CardFooter className="flex flex-col gap-4">
-            <Button 
-              type="submit" 
-              className="w-full font-semibold" 
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full font-semibold" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -161,11 +176,11 @@ export default function RegisterPage() {
                 "Zarejestruj się"
               )}
             </Button>
-            
+
             <div className="text-center text-sm text-muted-foreground">
               Masz już konto?{" "}
-              <Link 
-                href="/login" 
+              <Link
+                href="/login"
                 className="text-primary font-medium hover:underline underline-offset-4"
               >
                 Zaloguj się
