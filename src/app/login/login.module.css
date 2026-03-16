@@ -1,0 +1,25 @@
+.container {
+  background: white;
+  color: black;
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  gap: 10px;
+}
+
+.input {
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+.button {
+  padding: 10px;
+  background: blue;
+  color: white;
+  border: none;
+}
